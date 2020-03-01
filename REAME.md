@@ -114,8 +114,93 @@
       swaplabel -L ARCH-SWAP /dev/sda3  (for swap)
       ntfslabel (option) device [label] (for ntfs 这个命令没用过，相关信息请百度)
       ```
-  5.配置pacman
+  4.配置pacman
     ```
     vim /etc/pacman.conf  (把#Color那一行前面的注释去掉)
     vim /etc/pacman.d/mirrorlist  (寻找中国服务器，将它移动到mirrorlist的最顶上，保存退出，在vim里面可以用宏很方便地把所有的中国服务器移到前面)
+                                  (我用的是清华源：## China
+                                                  Server = http://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch)
     ```
+  5.安装基本包
+    - 挂载分区(这一步很重要，特别是引导分区，一定要确认好)
+    ```
+    mount -L ARCH-ROOT /mnt  (挂载没有标签的分区方法：mount /dev/sda4 /mnt)
+    mkdir /mnt/boot/efi  (创建启动分区挂载目录，这个一定要确认好是创建/mnt/boot/efi还是/mnt/boot,我是因为之前安装的manjaro挂载目录就是/boot/efi,所以才创建的是/boot/efi)
+    mount -L ARCH-BOOT /mnt/boot/efi
+    ```
+
+    - 安装基本包
+      ```
+      pacstrap /mnt base base-devel linux linux-firmware dhcpcd
+      ```
+  
+  6.挂载Fstab
+    生成自动挂载分区的fstab文件
+    ```
+    genfstab -L /mnt >> /mnt/etc/fstab
+    cat /mnt/etc/fstab  (查看生成文件是否正确)
+    ```
+
+  7.使用arch-chroot对安装好的系统进行配置
+    - 进入arch-chroot
+    ```
+    arch-chroot /mnt
+    ```
+
+    - 设置时区
+    ```
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  (创建链接)
+    hwlock --systohc  (同步时间)
+    ```
+
+    - 安装必须软件包
+    ```
+    pacman -S vim dialog wpa_supplicant ntfs-3g networkmanager
+    ```
+
+    - 设置Locale
+    ```
+    vim /etc/locale.gen  (在文件中找到zh_CN.UTF-8 UTF-8,zh_HK.UTF-8 UTF-8,zh_TW.UTF-8 UTF-8,en_US.UTF-8 UTF-8这四行，去掉行首的#号，保存并退出)
+    locale-gen
+    vim /etc/locale.conf  (在文件的第一行加入以下内容：LANG=en_US.UTF-8)
+    ```
+
+    - 设置主机名
+    ```
+    vim /etc/hostname  (在文件的第一行输入你自己设定的一个myhostname,如：16GARNDE)
+    vim /etc/hosts  (在文件末添加如下内容: 127.0.0.1	localhost
+                                          ::1		localhost
+                                          127.0.1.1	myhostname.localdomain	myhostname)
+    ```
+
+    - 设置root密码
+    ```
+    passwd  (按提示输入确认就行)
+    ```
+
+    - 安装Intel-ucode（非IntelCPU可以跳过此步骤）
+    ```
+    pacman -S intel-ucode
+    ```
+
+    - 安装Bootloader
+    ```
+    pacman -S os-prober ntfs-3g  (这两个包配合Grub检测已经存在的系统，自动设置启动选项)
+    pacman -S grub efibootmgr  (接下来的命令为uefi+gpt引导方式配置，其他引导方式请参照参考文档)
+    grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=grub  (部署grub)
+    grub-mkconfig -o /boot/grub/grub.cfg  (生成配置文件)
+    vim /boot/grub/grub.cfg  (检查是否生成正确的配置文件，多系统要查看是否有其他系统入口)
+    (如果没有生成正确的配置文件，查看/boot/efi目录是否有initramfs-linux-fallback.img initramfs-linux.img 
+    intel-ucode.img vmlinuz-linux这几个文件，如果都没有，说明linux内核没有被正确部署，很有可能是/boot目录没有被正确挂载导致的。
+    需要重新挂载，生成配置文件)
+    ```
+
+  8.重启
+    ```
+    exit
+    umount /mnt/boot/efi (要先卸载/mnt/boot/efi，再卸载/mnt)
+    umount /mnt
+    reboot (重启，等到关机后电脑还未重启的瞬间拔掉u盘，让电脑启动移动硬盘的系统)
+    ```
+
+  9.享受和折腾属于你自己的archlinux
