@@ -24,12 +24,12 @@
 
 # 目录
 - 制作安装u盘
-  -到https://www.archlinux.org/download/网页China镜像源中下载archlinux-**-x86_64.iso文件，可以MD5验证是否被篡改
-  -linux系统下制作u盘，使用dd命令:
+  - 到https://www.archlinux.org/download/网页China镜像源中下载archlinux-**-x86_64.iso文件，可以MD5验证是否被篡改
+  - linux系统下制作u盘，使用dd命令:
   ```
   http://www.runoob.com/linux/linux-comm-dd.html
   ```
-  -win系统下制作u盘，可以使用UltraISO，rufus，usbwriter
+  - win系统下制作u盘，可以使用UltraISO，rufus，usbwriter
 
 - 设置启动顺序
   百度查询自己电脑品牌的进入bios键，进入bios设置u盘为第一启动项
