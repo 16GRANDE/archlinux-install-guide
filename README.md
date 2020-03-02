@@ -24,7 +24,7 @@
 
 # 目录
 - 制作安装u盘
-  - 到https://www.archlinux.org/download/网页China镜像源中下载archlinux-**-x86_64.iso文件，可以MD5验证是否被篡改
+  - 到https://www.archlinux.org/download/ 网页China镜像源中下载archlinux-**-x86_64.iso文件，可以MD5验证是否被篡改
   - linux系统下制作u盘，使用dd命令:
   ```
   http://www.runoob.com/linux/linux-comm-dd.html
